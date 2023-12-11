@@ -28,32 +28,36 @@ func (c *Client) GetDevices() ([]Device, error) {
 	}
 
 	defer res.Body.Close()
-	var devices Response[Device]
-	err = json.NewDecoder(res.Body).Decode(&devices)
-	return devices.Result, err
+	var response Response[Device]
+	err = json.NewDecoder(res.Body).Decode(&response)
+	return response.Result, err
 }
 
 func (d *Device) MarshalJSON() ([]byte, error) {
 	device := struct {
-		Id                 string  `json:"id,omitempty"`
-		Room               string  `json:"room,omitempty"`
-		Mode               string  `json:"mode,omitempty"`
-		FanLevel           string  `json:"fan_level,omitempty"`
-		TemperatureUnit    string  `json:"temperature_unit,omitempty"`
-		CurrentTemperature float32 `json:"current_temperature,omitempty"`
-		TargetTemperature  float32 `json:"target_temperature,omitempty"`
-		Humidity           float32 `json:"humidity,omitempty"`
-		Running            bool    `json:"running,omitempty"`
+		Id                 string      `json:"id,omitempty"`
+		Room               string      `json:"room,omitempty"`
+		Mode               string      `json:"mode,omitempty"`
+		FanLevel           string      `json:"fan_level,omitempty"`
+		Running            bool        `json:"running,omitempty"`
+		Humidity           float32     `json:"humidity,omitempty"`
+		CurrentTemperature Temperature `json:"current_temperature,omitempty"`
+		TargetTemperature  Temperature `json:"target_temperature,omitempty"`
 	}{
-		Id:                 d.Id,
-		Room:               d.Room.Name,
-		Mode:               d.AcState.Mode,
-		FanLevel:           d.AcState.FanLevel,
-		TemperatureUnit:    d.TemperatureUnit,
-		CurrentTemperature: d.Measurements.Temperature,
-		TargetTemperature:  d.AcState.TargetTemperature,
-		Humidity:           d.Measurements.Humidity,
-		Running:            d.AcState.On,
+		Id:       d.Id,
+		Room:     d.Room.Name,
+		Mode:     d.AcState.Mode,
+		FanLevel: d.AcState.FanLevel,
+		Running:  d.AcState.On,
+		Humidity: d.Measurements.Humidity,
+		CurrentTemperature: Temperature{
+			Value: d.Measurements.Temperature,
+			Unit:  d.TemperatureUnit,
+		},
+		TargetTemperature: Temperature{
+			Value: d.AcState.TargetTemperature,
+			Unit:  d.AcState.TemperatureUnit,
+		},
 	}
 
 	return json.Marshal(device)
@@ -76,9 +80,15 @@ type Room struct {
 	Name string
 }
 
+type Temperature struct {
+	Value float32 `json:"value"`
+	Unit  string  `json:"unit"`
+}
+
 type State struct {
 	On                bool
 	Mode              string
 	FanLevel          string
 	TargetTemperature float32
+	TemperatureUnit   string
 }
