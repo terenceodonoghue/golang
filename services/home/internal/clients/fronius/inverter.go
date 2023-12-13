@@ -6,12 +6,12 @@ import (
 	"net/url"
 )
 
-func (c *Client) GetRealtimeData() (Inverter, error) {
+func (c *Client) GetRealtimeData(pv chan<- Inverter) error {
 	rel := &url.URL{Path: "GetInverterRealtimeData.cgi"}
 	url := baseUrl.ResolveReference(rel)
 	req, err := http.NewRequest("GET", url.String(), nil)
 	if err != nil {
-		return Inverter{}, err
+		return err
 	}
 
 	q := req.URL.Query()
@@ -21,21 +21,22 @@ func (c *Client) GetRealtimeData() (Inverter, error) {
 
 	res, err := c.httpClient.Do(req)
 	if err != nil {
-		return Inverter{}, err
+		return err
 	}
 
 	defer res.Body.Close()
 	var response Response[Inverter]
 	err = json.NewDecoder(res.Body).Decode(&response)
-	return response.Body, err
+	pv <- response.Body
+	return err
 }
 
 func (i Inverter) MarshalJSON() ([]byte, error) {
 	inverter := struct {
-		Power        Output `json:"power,omitempty"`
-		DailyEnergy  Output `json:"daily_energy,omitempty"`
-		AnnualEnergy Output `json:"annual_energy,omitempty"`
-		TotalEnergy  Output `json:"total_energy,omitempty"`
+		Power        Output `json:"power"`
+		DailyEnergy  Output `json:"daily_energy"`
+		AnnualEnergy Output `json:"annual_energy"`
+		TotalEnergy  Output `json:"total_energy"`
 	}{
 		Power:        i.Data.PAC,
 		DailyEnergy:  i.Data.DAY_ENERGY,

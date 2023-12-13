@@ -14,7 +14,7 @@ var baseUrl = url.URL{
 }
 
 func New() *Client {
-	c := &http.Client{Timeout: time.Minute}
+	c := &http.Client{Timeout: 2 * time.Second}
 	return &Client{
 		httpClient: c,
 	}

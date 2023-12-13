@@ -13,7 +13,7 @@ var baseUrl = url.URL{
 }
 
 func New(apiKey string) *Client {
-	c := &http.Client{Timeout: time.Minute}
+	c := &http.Client{Timeout: 10 * time.Second}
 	return &Client{
 		apiKey:     apiKey,
 		httpClient: c,

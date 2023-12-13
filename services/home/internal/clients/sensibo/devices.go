@@ -7,12 +7,12 @@ import (
 	"strings"
 )
 
-func (c *Client) GetDevices() ([]Device, error) {
+func (c *Client) GetDevices(ac chan<- []Device) error {
 	rel := &url.URL{Path: "users/me/pods"}
 	url := baseUrl.ResolveReference(rel)
 	req, err := http.NewRequest("GET", url.String(), nil)
 	if err != nil {
-		return nil, err
+		return err
 	}
 
 	q := req.URL.Query()
@@ -24,25 +24,26 @@ func (c *Client) GetDevices() ([]Device, error) {
 
 	res, err := c.httpClient.Do(req)
 	if err != nil {
-		return nil, err
+		return err
 	}
 
 	defer res.Body.Close()
 	var response Response[Device]
 	err = json.NewDecoder(res.Body).Decode(&response)
-	return response.Result, err
+	ac <- response.Result
+	return err
 }
 
 func (d *Device) MarshalJSON() ([]byte, error) {
 	device := struct {
-		Id                 string      `json:"id,omitempty"`
-		Room               string      `json:"room,omitempty"`
-		Mode               string      `json:"mode,omitempty"`
-		FanLevel           string      `json:"fan_level,omitempty"`
-		Running            bool        `json:"running,omitempty"`
-		Humidity           float32     `json:"humidity,omitempty"`
-		CurrentTemperature Temperature `json:"current_temperature,omitempty"`
-		TargetTemperature  Temperature `json:"target_temperature,omitempty"`
+		Id                 string      `json:"id"`
+		Room               string      `json:"room"`
+		Mode               string      `json:"mode"`
+		FanLevel           string      `json:"fan_level"`
+		Running            bool        `json:"running"`
+		Humidity           float32     `json:"humidity"`
+		CurrentTemperature Temperature `json:"current_temperature"`
+		TargetTemperature  Temperature `json:"target_temperature"`
 	}{
 		Id:       d.Id,
 		Room:     d.Room.Name,
