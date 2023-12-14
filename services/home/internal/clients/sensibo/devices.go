@@ -40,17 +40,17 @@ func (d *Device) MarshalJSON() ([]byte, error) {
 		Room               string      `json:"room"`
 		Mode               string      `json:"mode"`
 		FanLevel           string      `json:"fan_level"`
-		Running            bool        `json:"running"`
+		IsRunning          bool        `json:"is_running"`
 		Humidity           float32     `json:"humidity"`
 		CurrentTemperature Temperature `json:"current_temperature"`
 		TargetTemperature  Temperature `json:"target_temperature"`
 	}{
-		Id:       d.Id,
-		Room:     d.Room.Name,
-		Mode:     d.AcState.Mode,
-		FanLevel: d.AcState.FanLevel,
-		Running:  d.AcState.On,
-		Humidity: d.Measurements.Humidity,
+		Id:        d.Id,
+		Room:      d.Room.Name,
+		Mode:      d.AcState.Mode,
+		FanLevel:  d.AcState.FanLevel,
+		IsRunning: d.AcState.On,
+		Humidity:  d.Measurements.Humidity,
 		CurrentTemperature: Temperature{
 			Value: d.Measurements.Temperature,
 			Unit:  d.TemperatureUnit,
