@@ -1,3 +1,3 @@
 # golang
 
-✌️ All things Golang
+📦 All things Golang
