@@ -9,10 +9,7 @@ func main() {
 	r := gin.Default()
 	api := r.Group("/api")
 	{
-		status := api.Group("/status")
-		{
-			status.GET("", controllers.GetStatus)
-		}
+		api.GET("/status", controllers.GetStatus)
 	}
 	r.Run()
 }

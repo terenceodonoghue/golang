@@ -3,12 +3,13 @@ package sensibo
 import (
 	"net/http"
 	"net/url"
+	"os"
 	"time"
 )
 
 var baseUrl = url.URL{
 	Scheme: "https",
-	Host:   "home.sensibo.com",
+	Host:   os.Getenv("SENSIBO_AC_HOST"),
 	Path:   "/api/v2/",
 }
 
