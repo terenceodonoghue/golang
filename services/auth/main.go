@@ -10,6 +10,7 @@ func main() {
 	api := r.Group("/api")
 	{
 		api.POST("/login", controllers.Login)
+		api.GET("/refresh_token", controllers.RefreshToken)
 	}
 	r.Run()
 }

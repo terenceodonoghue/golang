@@ -10,10 +10,10 @@ import (
 
 var secretKey = "JWT_SECRET_KEY"
 
-func CreateToken(now func() time.Time) (string, error) {
+func CreateToken(exp time.Time) (string, error) {
 	key := []byte(os.Getenv(secretKey))
 	token := jwt.NewWithClaims(jwt.SigningMethodHS256, jwt.MapClaims{
-		"exp": now().Add(10 * time.Minute).Unix(),
+		"exp": exp.Unix(),
 	})
 
 	tokenString, err := token.SignedString(key)

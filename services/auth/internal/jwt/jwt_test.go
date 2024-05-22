@@ -21,7 +21,7 @@ func TestVerifyToken(t *testing.T) {
 	t.Setenv("JWT_SECRET_KEY", "test-key")
 
 	type test struct {
-		with func() time.Time
+		with time.Time
 		want error
 	}
 
@@ -38,11 +38,7 @@ func TestVerifyToken(t *testing.T) {
 	}
 }
 
-func current() time.Time {
-	return time.Date(2025, time.January,
-		00, 00, 00, 00, 0, time.UTC)
-}
+var current time.Time = time.Date(2025, time.January,
+	00, 00, 00, 00, 0, time.UTC)
 
-func expired() time.Time {
-	return time.Now().Add(-1 * time.Hour)
-}
+var expired time.Time = time.Now().Add(-1 * time.Hour)
