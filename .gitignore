@@ -76,4 +76,7 @@ Temporary Items
 .history
 .ionide
 
+### Other ###
+.secrets
+
 # End of https://www.toptal.com/developers/gitignore/api/go,macos,visualstudiocode
