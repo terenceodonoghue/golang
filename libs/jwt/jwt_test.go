@@ -18,7 +18,7 @@ func TestCreateToken(t *testing.T) {
 	}
 
 	for _, test := range errs {
-		t.Setenv("JWT_SECRET_KEY", "test-key")
+		t.Setenv("JWT_SECRET", "test-key")
 		_, got := CreateToken(current)
 		assert.ErrorIs(t, got, test.want)
 	}
@@ -30,7 +30,7 @@ func TestVerifyToken(t *testing.T) {
 		want error
 	}
 
-	type sig struct {
+	type key struct {
 		with string
 		want error
 	}
@@ -40,25 +40,29 @@ func TestVerifyToken(t *testing.T) {
 		{with: expired, want: jwt.ErrTokenExpired},
 	}
 
-	sigs := []sig{
+	keys := []key{
 		{with: "test-key", want: nil},
 		{with: "fake-key", want: jwt.ErrSignatureInvalid},
 	}
 
 	for _, test := range exps {
-		t.Setenv("JWT_SECRET_KEY", "test-key")
-		jwt, _ := CreateToken(test.with)
+		jwt := createToken(t, test.with)
 		got := VerifyToken(jwt)
 		assert.ErrorIs(t, got, test.want)
 	}
 
-	for _, test := range sigs {
-		t.Setenv("JWT_SECRET_KEY", test.with)
-		jwt, _ := CreateToken(current)
-		t.Setenv("JWT_SECRET_KEY", "test-key")
+	for _, test := range keys {
+		jwt := createToken(t, current)
+		t.Setenv("JWT_SECRET", test.with)
 		got := VerifyToken(jwt)
 		assert.ErrorIs(t, got, test.want)
 	}
+}
+
+func createToken(t *testing.T, exp time.Time) string {
+	t.Setenv("JWT_SECRET", "test-key")
+	jwt, _ := CreateToken(exp)
+	return jwt
 }
 
 var current time.Time = time.Date(2025, time.January,
