@@ -33,10 +33,10 @@ func (c *Client) GetRealtimeData(pv chan<- Inverter) error {
 
 func (i Inverter) MarshalJSON() ([]byte, error) {
 	inverter := struct {
-		Power        Output `json:"power"`
-		DailyEnergy  Output `json:"daily_energy"`
-		AnnualEnergy Output `json:"annual_energy"`
-		TotalEnergy  Output `json:"total_energy"`
+		Power        output `json:"power"`
+		DailyEnergy  output `json:"daily_energy"`
+		AnnualEnergy output `json:"annual_energy"`
+		TotalEnergy  output `json:"total_energy"`
 	}{
 		Power:        i.Data.PAC,
 		DailyEnergy:  i.Data.DAY_ENERGY,
@@ -47,7 +47,7 @@ func (i Inverter) MarshalJSON() ([]byte, error) {
 	return json.Marshal(inverter)
 }
 
-func (o Output) MarshalJSON() ([]byte, error) {
+func (o output) MarshalJSON() ([]byte, error) {
 	output := struct {
 		Value int    `json:"value"`
 		Unit  string `json:"unit"`
@@ -59,7 +59,7 @@ func (o Output) MarshalJSON() ([]byte, error) {
 	return json.Marshal(output)
 }
 
-func (v Values) Sum() int {
+func (v values) Sum() int {
 	sum := 0
 	for _, t := range v {
 		sum += t
@@ -70,16 +70,16 @@ func (v Values) Sum() int {
 
 type Inverter struct {
 	Data struct {
-		PAC          Output
-		DAY_ENERGY   Output
-		YEAR_ENERGY  Output
-		TOTAL_ENERGY Output
+		PAC          output
+		DAY_ENERGY   output
+		YEAR_ENERGY  output
+		TOTAL_ENERGY output
 	}
 }
 
-type Output struct {
+type output struct {
 	Unit   string
-	Values Values
+	Values values
 }
 
-type Values map[string]int
+type values map[string]int

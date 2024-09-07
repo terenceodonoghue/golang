@@ -14,6 +14,13 @@ const (
 )
 
 func Login(c *gin.Context) {
+	var request LoginRequest
+
+	if err := c.ShouldBindJSON(&request); err != nil {
+		c.Status(http.StatusBadRequest)
+		return
+	}
+
 	expiry := time.Now().Add(10 * time.Minute)
 	maxAge := time.Now().AddDate(0, 0, 14)
 
@@ -58,4 +65,9 @@ func RefreshToken(c *gin.Context) {
 	c.JSON(http.StatusOK, gin.H{
 		access: token,
 	})
+}
+
+type LoginRequest struct {
+	Email    string `json:"email" binding:"required"`
+	Password string `json:"password" binding:"required"`
 }

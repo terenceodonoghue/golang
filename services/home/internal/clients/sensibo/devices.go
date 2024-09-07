@@ -42,8 +42,8 @@ func (d *Device) MarshalJSON() ([]byte, error) {
 		FanLevel           string      `json:"fan_level"`
 		IsRunning          bool        `json:"is_running"`
 		Humidity           float32     `json:"humidity"`
-		CurrentTemperature Temperature `json:"current_temperature"`
-		TargetTemperature  Temperature `json:"target_temperature"`
+		CurrentTemperature temperature `json:"current_temperature"`
+		TargetTemperature  temperature `json:"target_temperature"`
 	}{
 		Id:        d.Id,
 		Room:      d.Room.Name,
@@ -51,11 +51,11 @@ func (d *Device) MarshalJSON() ([]byte, error) {
 		FanLevel:  d.AcState.FanLevel,
 		IsRunning: d.AcState.On,
 		Humidity:  d.Measurements.Humidity,
-		CurrentTemperature: Temperature{
+		CurrentTemperature: temperature{
 			Value: d.Measurements.Temperature,
 			Unit:  d.TemperatureUnit,
 		},
-		TargetTemperature: Temperature{
+		TargetTemperature: temperature{
 			Value: d.AcState.TargetTemperature,
 			Unit:  d.AcState.TemperatureUnit,
 		},
@@ -66,30 +66,30 @@ func (d *Device) MarshalJSON() ([]byte, error) {
 
 type Device struct {
 	Id              string
-	Room            Room
-	AcState         State
-	Measurements    Measurement
+	Room            room
+	AcState         state
+	Measurements    measurement
 	TemperatureUnit string
 }
 
-type Measurement struct {
+type measurement struct {
 	Temperature float32
 	Humidity    float32
 }
 
-type Room struct {
+type room struct {
 	Name string
 }
 
-type Temperature struct {
-	Value float32 `json:"value"`
-	Unit  string  `json:"unit"`
-}
-
-type State struct {
+type state struct {
 	On                bool
 	Mode              string
 	FanLevel          string
 	TargetTemperature float32
 	TemperatureUnit   string
+}
+
+type temperature struct {
+	Value float32 `json:"value"`
+	Unit  string  `json:"unit"`
 }
