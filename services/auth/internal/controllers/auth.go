@@ -5,11 +5,13 @@ import (
 	"time"
 
 	"github.com/gin-gonic/gin"
-	"github.com/terenceodonoghue/golang/services/auth/internal/jwt"
+	"github.com/terenceodonoghue/golang/libs/jwt"
 )
 
-const access = "access_token"
-const refresh = "refresh_token"
+const (
+	access  = "access_token"
+	refresh = "refresh_token"
+)
 
 func Login(c *gin.Context) {
 	expiry := time.Now().Add(10 * time.Minute)
