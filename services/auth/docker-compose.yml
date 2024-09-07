@@ -2,27 +2,39 @@ name: auth
 
 services:
   web:
+    build: .
     depends_on:
       - db
-    build: .
     environment:
+      DB_NAME: 'auth'
+      DB_USER: '/run/secrets/postgres_user'
+      DB_PASS: /run/secrets/postgres_password
+      DB_HOST: 'db'
+      DB_PORT: 5432
       GIN_MODE: 'release'
       PORT: 8080
     ports:
       - 8080:8080
+    secrets:
+      - postgres_user
+      - postgres_password
 
   db:
     image: 'postgres:16'
     environment:
       POSTGRES_DB: 'auth'
-      POSTGRES_PASSWORD_FILE: /run/secrets/db_password
-    secrets:
-      - db_password
-    volumes:
-      - ./config/init.sql:/docker-entrypoint-initdb.d/init.sql
+      POSTGRES_USER_FILE: '/run/secrets/postgres_user'
+      POSTGRES_PASSWORD_FILE: /run/secrets/postgres_password
     ports:
       - 5432:5432
+    secrets:
+      - postgres_user
+      - postgres_password
+    volumes:
+      - ./config/init.sql:/docker-entrypoint-initdb.d/init.sql
 
 secrets:
-  db_password:
-    file: ./.secrets/db_password.txt
+  postgres_user:
+    file: ./.secrets/postgres_user.txt
+  postgres_password:
+    file: ./.secrets/postgres_password.txt
