@@ -5,6 +5,7 @@ import (
 	"time"
 
 	"github.com/gin-gonic/gin"
+	"github.com/jackc/pgx/v5"
 	"github.com/terenceodonoghue/golang/libs/jwt"
 )
 
@@ -13,7 +14,7 @@ const (
 	refresh = "refresh_token"
 )
 
-func Login(c *gin.Context) {
+func Login(c *gin.Context, db *pgx.Conn) {
 	var request LoginRequest
 
 	if err := c.ShouldBindJSON(&request); err != nil {
@@ -43,7 +44,7 @@ func Login(c *gin.Context) {
 	})
 }
 
-func RefreshToken(c *gin.Context) {
+func RefreshToken(c *gin.Context, db *pgx.Conn) {
 	cookie, err := c.Cookie(refresh)
 	if err != nil {
 		c.Status(http.StatusBadRequest)
