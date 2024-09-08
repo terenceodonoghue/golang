@@ -1,4 +1,4 @@
-package controllers
+package controller
 
 import (
 	"net/http"
@@ -7,6 +7,7 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/jackc/pgx/v5"
 	"github.com/terenceodonoghue/golang/libs/jwt"
+	"github.com/terenceodonoghue/golang/services/auth/internal/database"
 )
 
 const (
@@ -14,11 +15,19 @@ const (
 	refresh = "refresh_token"
 )
 
-func Login(c *gin.Context, db *pgx.Conn) {
+func Login(c *gin.Context, conn *pgx.Conn) {
 	var request LoginRequest
 
 	if err := c.ShouldBindJSON(&request); err != nil {
 		c.Status(http.StatusBadRequest)
+		return
+	}
+
+	if exists, err := database.Exists(conn, database.UserCredentials, "email_address", request.EmailAddress); err != nil {
+		c.Status(http.StatusInternalServerError)
+		return
+	} else if !exists {
+		c.Status(http.StatusUnauthorized)
 		return
 	}
 
@@ -44,7 +53,7 @@ func Login(c *gin.Context, db *pgx.Conn) {
 	})
 }
 
-func RefreshToken(c *gin.Context, db *pgx.Conn) {
+func RefreshToken(c *gin.Context, conn *pgx.Conn) {
 	cookie, err := c.Cookie(refresh)
 	if err != nil {
 		c.Status(http.StatusBadRequest)
@@ -69,6 +78,6 @@ func RefreshToken(c *gin.Context, db *pgx.Conn) {
 }
 
 type LoginRequest struct {
-	Email    string `json:"email" binding:"required"`
-	Password string `json:"password" binding:"required"`
+	EmailAddress string `json:"email_address" binding:"required"`
+	Password     string `json:"password" binding:"required"`
 }

@@ -5,7 +5,7 @@ import (
 	"log"
 
 	"github.com/gin-gonic/gin"
-	"github.com/terenceodonoghue/golang/services/auth/internal/controllers"
+	"github.com/terenceodonoghue/golang/services/auth/internal/controller"
 	"github.com/terenceodonoghue/golang/services/auth/internal/database"
 	"github.com/terenceodonoghue/golang/services/auth/internal/middleware"
 )
@@ -24,10 +24,10 @@ func main() {
 		api.Use(middleware.CORS())
 		{
 			api.POST("/login", func(c *gin.Context) {
-				controllers.Login(c, db)
+				controller.Login(c, db)
 			})
 			api.GET("/refresh_token", func(c *gin.Context) {
-				controllers.RefreshToken(c, db)
+				controller.RefreshToken(c, db)
 			})
 		}
 	}
