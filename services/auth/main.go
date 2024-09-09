@@ -22,11 +22,12 @@ func main() {
 	api := r.Group("/api")
 	{
 		api.Use(middleware.CORS())
+		auth := api.Group("/auth")
 		{
-			api.POST("/login", func(c *gin.Context) {
+			auth.POST("/login", func(c *gin.Context) {
 				controller.Login(c, db)
 			})
-			api.GET("/refresh_token", func(c *gin.Context) {
+			auth.GET("/refresh_token", func(c *gin.Context) {
 				controller.RefreshToken(c, db)
 			})
 		}
