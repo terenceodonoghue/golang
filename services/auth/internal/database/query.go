@@ -9,7 +9,7 @@ import (
 type Table string
 
 const (
-	ExternalProviders  Table = "external_providers"
+	ExtProviders       Table = "ext_providers"
 	UserAccounts       Table = "user_accounts"
 	UserCredentials    Table = "user_credentials"
 	UserCredentialsExt Table = "user_credentials_ext"

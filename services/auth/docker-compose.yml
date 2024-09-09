@@ -31,7 +31,7 @@ services:
       - postgres_user
       - postgres_password
     volumes:
-      - ./config/init.sql:/docker-entrypoint-initdb.d/init.sql
+      - ./sql/init.sql:/docker-entrypoint-initdb.d/init.sql
 
 secrets:
   postgres_user:
