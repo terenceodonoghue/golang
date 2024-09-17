@@ -1,10 +1,11 @@
 package controller
 
 import (
+	"encoding/json"
+	"log"
 	"net/http"
 	"time"
 
-	"github.com/gin-gonic/gin"
 	"github.com/jackc/pgx/v5"
 	"github.com/terenceodonoghue/golang/libs/jwt"
 	"github.com/terenceodonoghue/golang/services/auth/internal/database"
@@ -15,65 +16,76 @@ const (
 	refresh = "refresh_token"
 )
 
-func Login(c *gin.Context, conn *pgx.Conn) {
-	var request LoginRequest
+func Login(conn *pgx.Conn) http.HandlerFunc {
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		decoder := json.NewDecoder(r.Body)
+		var request LoginRequest
 
-	if err := c.ShouldBindJSON(&request); err != nil {
-		c.Status(http.StatusBadRequest)
-		return
-	}
+		if err := decoder.Decode(&request); err != nil {
+			w.WriteHeader(http.StatusBadRequest)
+			return
+		}
 
-	if exists, err := database.Exists(conn, database.UserCredentials, "email_address", request.EmailAddress); err != nil {
-		c.Status(http.StatusInternalServerError)
-		return
-	} else if !exists {
-		c.Status(http.StatusUnauthorized)
-		return
-	}
+		if exists, err := database.Exists(conn, database.UserCredentials, "email_address", request.EmailAddress); err != nil {
+			w.WriteHeader(http.StatusInternalServerError)
+			return
+		} else if !exists {
+			w.WriteHeader(http.StatusUnauthorized)
+			return
+		}
 
-	expiry := time.Now().Add(10 * time.Minute)
-	maxAge := time.Now().AddDate(0, 0, 14)
+		expiry := time.Now().Add(10 * time.Minute)
+		maxAge := time.Now().AddDate(0, 0, 14)
 
-	token, err := jwt.CreateToken(expiry)
-	if err != nil {
-		c.Status(http.StatusInternalServerError)
-		return
-	}
+		token, err := jwt.CreateToken(expiry)
+		if err != nil {
+			w.WriteHeader(http.StatusInternalServerError)
+			return
+		}
 
-	if token, err := jwt.CreateToken(maxAge); err != nil {
-		c.Status(http.StatusInternalServerError)
-		return
-	} else {
-		c.SetSameSite(http.SameSiteStrictMode)
-		c.SetCookie(refresh, token, int(time.Until(maxAge).Seconds()), "/api/refresh_token", "", true, true)
-	}
+		if token, err := jwt.CreateToken(maxAge); err != nil {
+			w.WriteHeader(http.StatusInternalServerError)
+			return
+		} else {
+			http.SetCookie(w, &http.Cookie{
+				Name:     refresh,
+				Value:    token,
+				MaxAge:   int(time.Until(maxAge).Seconds()),
+				Path:     "/api/auth/refresh_token",
+				Domain:   "",
+				SameSite: http.SameSiteStrictMode,
+				Secure:   true,
+				HttpOnly: true,
+			})
+		}
 
-	c.JSON(http.StatusOK, gin.H{
-		access: token,
+		json.NewEncoder(w).Encode(map[string]string{access: token})
 	})
+
 }
 
-func RefreshToken(c *gin.Context, conn *pgx.Conn) {
-	cookie, err := c.Cookie(refresh)
-	if err != nil {
-		c.Status(http.StatusBadRequest)
-		return
-	}
+func RefreshToken(conn *pgx.Conn) http.HandlerFunc {
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		cookie, err := r.Cookie(refresh)
+		if err != nil {
+			log.Print(err)
+			w.WriteHeader(http.StatusBadRequest)
+			return
+		}
 
-	if err = jwt.VerifyToken(cookie); err != nil {
-		c.Status(http.StatusUnauthorized)
-		return
-	}
+		if err = jwt.VerifyToken(cookie.Value); err != nil {
+			w.WriteHeader(http.StatusUnauthorized)
+			return
+		}
 
-	expiry := time.Now().Add(10 * time.Minute)
-	token, err := jwt.CreateToken(expiry)
-	if err != nil {
-		c.Status(http.StatusInternalServerError)
-		return
-	}
+		expiry := time.Now().Add(10 * time.Minute)
+		token, err := jwt.CreateToken(expiry)
+		if err != nil {
+			w.WriteHeader(http.StatusInternalServerError)
+			return
+		}
 
-	c.JSON(http.StatusOK, gin.H{
-		access: token,
+		json.NewEncoder(w).Encode(map[string]string{access: token})
 	})
 }
 

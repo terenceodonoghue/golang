@@ -3,19 +3,24 @@ package middleware
 import (
 	"net/http"
 	"strings"
-
-	"github.com/gin-gonic/gin"
 )
 
-func CORS() gin.HandlerFunc {
-	return func(c *gin.Context) {
-		origin := c.Request.Header.Get("Origin")
+func CORS(next http.Handler) http.HandlerFunc {
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		origin := r.Header.Get("Origin")
 		if !strings.Contains(origin, "localhost") {
-			c.AbortWithStatus(http.StatusForbidden)
+			w.WriteHeader(http.StatusForbidden)
+			return
 		}
 
-		c.Header("Access-Control-Allow-Origin", origin)
-		c.Header("Access-Control-Allow-Credentials", "true")
-		c.Next()
-	}
+		w.Header().Set("Access-Control-Allow-Origin", origin)
+		w.Header().Set("Access-Control-Allow-Credentials", "true")
+
+		if r.Method == http.MethodOptions {
+			w.WriteHeader(http.StatusOK)
+			return
+		}
+
+		next.ServeHTTP(w, r)
+	})
 }

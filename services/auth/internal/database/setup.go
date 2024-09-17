@@ -6,6 +6,7 @@ import (
 	"os"
 
 	"github.com/jackc/pgx/v5"
+	"github.com/terenceodonoghue/golang/libs/env"
 )
 
 func New() (*pgx.Conn, error) {
@@ -19,24 +20,30 @@ func New() (*pgx.Conn, error) {
 }
 
 func connStr() (string, error) {
+
 	var (
-		DB_USER = os.Getenv("DB_USER")
-		DB_PASS = os.Getenv("DB_PASS")
-		DB_HOST = os.Getenv("DB_HOST")
-		DB_PORT = os.Getenv("DB_PORT")
-		DB_NAME = os.Getenv("DB_NAME")
+		POSTGRES_HOST          = env.GetOrDefault("POSTGRES_HOST", "localhost")
+		POSTGRES_PORT          = env.GetOrDefault("POSTGRES_PORT", 5432)
+		POSTGRES_USER_FILE     = env.GetOrDefault("POSTGRES_USER_FILE", "./.secrets/postgres_user.txt")
+		POSTGRES_PASSWORD_FILE = env.GetOrDefault("POSTGRES_PASSWORD_FILE", "./.secrets/postgres_password.txt")
+		POSTGRES_DB_FILE       = env.GetOrDefault("POSTGRES_DB_FILE", "./.secrets/postgres_db.txt")
 	)
 
-	user, err := os.ReadFile(DB_USER)
+	user, err := os.ReadFile(POSTGRES_USER_FILE)
 	if err != nil {
 		return "", err
 	}
 
-	password, err := os.ReadFile(DB_PASS)
+	password, err := os.ReadFile(POSTGRES_PASSWORD_FILE)
 	if err != nil {
 		return "", err
 	}
 
-	connStr := fmt.Sprintf("postgres://%s:%s@%s:%s/%s", string(user), string(password), DB_HOST, DB_PORT, DB_NAME)
+	db, err := os.ReadFile(POSTGRES_DB_FILE)
+	if err != nil {
+		return "", err
+	}
+
+	connStr := fmt.Sprintf("postgres://%s:%s@%s:%s/%s", user, password, POSTGRES_HOST, POSTGRES_PORT, db)
 	return connStr, err
 }

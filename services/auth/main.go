@@ -3,8 +3,8 @@ package main
 import (
 	"context"
 	"log"
+	"net/http"
 
-	"github.com/gin-gonic/gin"
 	"github.com/terenceodonoghue/golang/services/auth/internal/controller"
 	"github.com/terenceodonoghue/golang/services/auth/internal/database"
 	"github.com/terenceodonoghue/golang/services/auth/internal/middleware"
@@ -18,19 +18,12 @@ func main() {
 
 	defer db.Close(context.Background())
 
-	r := gin.Default()
-	api := r.Group("/api")
-	{
-		api.Use(middleware.CORS())
-		auth := api.Group("/auth")
-		{
-			auth.POST("/login", func(c *gin.Context) {
-				controller.Login(c, db)
-			})
-			auth.GET("/refresh_token", func(c *gin.Context) {
-				controller.RefreshToken(c, db)
-			})
-		}
+	r := http.NewServeMux()
+	r.HandleFunc("POST /api/auth/login", middleware.CORS(controller.Login(db)))
+	r.HandleFunc("GET /api/auth/refresh_token", middleware.CORS(controller.RefreshToken(db)))
+
+	err = http.ListenAndServe(":3000", r)
+	if err != nil {
+		log.Fatal(err)
 	}
-	r.Run()
 }
